@@ -1,0 +1,15 @@
+2 0 2 ff2++ 5 0"xor" x                v
+;define xor, 2 arg, at (0,2), 32 wide, 5 high;
+01p02p01-ff2++>01g2%02g2%-:*\1-v
+         v_v#: p20/2g20p10/2g10<
+         >#$  ^ >v
+           >\:1+|>\2*+
+                >$@
+v                                     <
+>a8*5+ 55*a*5+ 0"xor"= . v ;55 xor ff;
+v            ,a          <
+ ;define strlen, -1 arg, at (0,12), 21 wide, 1 high. negative args signify 0gnirts;
+>01- 0 c ab+ 1 0"strlen" x v
+0 > #$ #\ #+\#1:#\_$@
+v                          <
+>0"TESTING123" 0"strlen" = .@
