@@ -12,4 +12,9 @@ v            ,a          <
 >01- 0 c ab+ 1 0"strlen" x v
 0 > #$ #\ #+\#1:#\_$@
 v                          <
->0"TESTING123" 0"strlen" = .@
+>0"TESTING123" 0"strlen" = .v
+v           ,a              <
+>1 0 a7+ 7 1 0"not" x v ;bitwise not, 1 arg;
+01-*1-@
+v                     <
+>1 0"not"= . @

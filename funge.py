@@ -46,7 +46,7 @@ class Funge:
 		if (not self.string and not self.nx and not self.skip):
 			while len(self.grid[self.ip[1]])<=self.ip[0] or self.grid[self.ip[1]][self.ip[0]] == 32: #skip blank
 				self.ip = Funge.addv(self.grid, self.ip, self.vec)
-			if self.debug:
+			if "d" in self.debug:
 				try: #PRETTY DEBUG OUTPUT
 					print("-------------------------" + str(self.string))
 					print(self.stack)
@@ -161,12 +161,12 @@ class Funge:
 				except:()
 			elif (x<0 or y<0):()
 			else:
-				if self.debug:print("SELF MODIFY")
+				if "m" in self.debug:print("SELF MODIFY. put ", n, "at (", x, y, ")")
 				while len(self.grid)<=y:
-					if self.debug:print("Y ADD")
+					if "m" in self.debug:print("Y ADD: extended grid")
 					self.grid.append([])
 				while len(self.grid[y])<=x:
-					if self.debug:print("X ADD")
+					if "m" in self.debug:print("X ADD: extended grid[",y,"]")
 					self.grid[y].append(32)
 				self.grid[y][x] = n
 		elif (op == ord("~")):
@@ -208,7 +208,7 @@ class Funge:
 						except:break
 				except:break
 			self.func[str] = (n,grid)
-			if self.debug:
+			if "f" in self.debug:
 				print("ADDED FUNC", str)
 				print("##################")
 				try:
@@ -236,8 +236,8 @@ class Funge:
 				for i in range(self.func[str][0]):
 					args.append(self.pop())
 			args = args[::-1]
-			if self.debug:print("EXECUTING FUNC", str, "WITH ARGS", args)
-			subfunge = Funge(self.func[str][1][:], args, self.func, self.debug)
+			if "f" in self.debug:print("EXECUTING FUNC", str, "WITH ARGS", args)
+			subfunge = Funge(self.func[str][1], args, self.func, self.debug)
 			exe = 0
 			while exe == 0:
 				exe = subfunge.tick()
@@ -253,6 +253,6 @@ class Funge:
 			try:self.func[str]
 			except:self.vec = [-i for i in self.vec];return 0
 			del self.func[str]
-		elif (op == ord("z") and self.debug): #pause - debugging mode only
+		elif (op == ord("z") and "p" in self.debug): #pause - debugging mode only
 			input()
 		return 0
