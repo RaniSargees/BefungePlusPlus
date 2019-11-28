@@ -128,7 +128,7 @@ class Funge:
 			b = self.pop()
 			self.push(self.pop()//b)
 		elif (op == ord("`")):
-			self.push(int(self.pop<self.pop))
+			self.push(int(self.pop()<self.pop()))
 		elif (op == ord(":")):
 			a = self.pop()
 			self.push(a)
