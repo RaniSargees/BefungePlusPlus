@@ -170,12 +170,10 @@ class Funge:
 					self.grid[y].append(32)
 				self.grid[y][x] = n
 		elif (op == ord("~")):
-			vin = input()
-			try:self.push(ord(vin[0]))
+			try:self.push(ord(input()[0]))
 			except:self.push(0)
 		elif (op == ord("&")):
-			vin = input()
-			try:self.push(int(vin))
+			try:self.push(int(input()))
 			except:self.push(0)
 		elif (op == ord("@")):
 			return self.stack[:]
