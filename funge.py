@@ -2,13 +2,13 @@ from display import *
 import random
 
 class Funge:
-	def __init__(self, program, stack=[], func={}, debug = 0):
+	def __init__(self, program, stack=[], func={}, debug=""):
 		self.display = Display()
 		self.ip = [0,0] #instruction pointer
 		self.vec = [1,0] #instruction vector
 		self.stack = stack #program stack
 		self.grid = [] #program grid
-		self.func = func #function dict (numargs,x,y,w,h)
+		self.func = func #function dict hexname:(numargs,grid,cache)
 		self.string = False
 		self.nx = False
 		self.skip = False
@@ -182,12 +182,13 @@ class Funge:
 			self.display.update()
 		elif (op == ord("x")): #create function
 			#pop 0gnirt, height, width, vector (y x), num args
-			str = []
+			cachable = True
+			fstr = []
 			while 1:
 				popped = self.pop()
 				if (not popped):break
-				str.append(hex(popped).replace("0x",""))
-			str = "".join(str)
+				fstr.append(hex(popped).replace("0x",""))
+			fstr = "".join(fstr)
 			h = self.pop()
 			w = self.pop()
 			y = self.pop()
@@ -195,6 +196,7 @@ class Funge:
 			n = self.pop() #negative argument counts indicate 0gnirts for arguments
 			grid = []
 			if (min(x,y)<0 or min(h,w)<1):self.vec = [-i for i in self.vec];return 0
+			cachable = bool(n);
 			try:self.grid[y][x]
 			except:self.vec = [-i for i in self.vec];return 0
 			for i in range(h):
@@ -202,12 +204,14 @@ class Funge:
 					self.grid[y+i]
 					grid.append([])
 					for j in range(w): #whatever.
-						try:grid[-1].append(self.grid[y+i][x+j])
+						try:
+							grid[-1].append(self.grid[y+i][x+j])
+							if (self.grid[y+i][x+j] in [ord("p"),ord("?")]):cachable=False
 						except:break
 				except:break
-			self.func[str] = (n,grid)
+			self.func[fstr] = (n,grid,{"cachable":cachable})
 			if "f" in self.debug:
-				print("ADDED FUNC", str)
+				print("ADDED FUNC", fstr)
 				print("##################")
 				try:
 					pr = [[chr(max(32,y)) for y in x] for x in grid]
@@ -215,42 +219,55 @@ class Funge:
 				except:()
 				print("##################")
 		elif (op == ord("=")): #execute function
-			str = []
+			fstr = []
 			while 1:
 				popped = self.pop()
 				if (not popped):break
-				str.append(hex(popped).replace("0x",""))
-			str = "".join(str)
+				fstr.append(hex(popped).replace("0x",""))
+			fstr = "".join(fstr)
 			args = []
-			try:self.func[str]
+			try:self.func[fstr]
 			except:self.vec = [-i for i in self.vec];return 0
-			if (self.func[str][0]<0):
-				for i in range(-self.func[str][0]):
+			if (self.func[fstr][0]<0):
+				for i in range(-self.func[fstr][0]):
 					while 1:
 						popped = self.pop()
 						args.append(popped)
 						if (not popped):break;print("BREAK")
 			else:
-				for i in range(self.func[str][0]):
+				for i in range(self.func[fstr][0]):
 					args.append(self.pop())
 			args = args[::-1]
-			if "f" in self.debug:print("EXECUTING FUNC", str, "WITH ARGS", args)
-			subfunge = Funge(self.func[str][1], args, self.func, self.debug)
-			exe = 0
-			while exe == 0:
-				exe = subfunge.tick()
-			if exe==1: return 1
-			else: self.stack = self.stack+exe
+			if "f" in self.debug:print("EXECUTING FUNC", fstr, "WITH ARGS", args, "CACHE", self.func[fstr][-1]["cachable"])
+			if self.func[fstr][-1]["cachable"]:
+				try:
+					self.stack=self.stack+self.func[fstr][-1][str(args)]
+					if "f" in self.debug:print(" - GOT RESULT FROM CACHE")
+				except:
+					if "f" in self.debug:print(" - RESULT NOT CACHED")
+					subfunge = Funge(self.func[fstr][1], args, self.func, self.debug)
+					exe = 0
+					while exe == 0:exe = subfunge.tick()
+					if exe==1: return 1
+					else:self.func[fstr][-1][str(args)] = exe
+					self.stack=self.stack+self.func[fstr][-1][str(args)]
+			else:
+				subfunge = Funge(self.func[fstr][1], args, self.func, self.debug)
+				exe = 0
+				while exe == 0:exe = subfunge.tick()
+				if exe==1: return 1
+				else:self.stack=self.stack+exe
+
 		elif (op == ord("n")): #delete function
-			str = []
+			fstr = []
 			while 1:
 				popped = self.pop()
 				if (not popped):break
-				str.append(hex(popped).replace("0x",""))
-			str = "".join(str)
-			try:self.func[str]
+				fstr.append(hex(popped).replace("0x",""))
+			fstr = "".join(fstr)
+			try:self.func[fstr]
 			except:self.vec = [-i for i in self.vec];return 0
-			del self.func[str]
+			del self.func[fstr]
 		elif (op == ord("z") and "p" in self.debug): #pause - debugging mode only
 			input()
 		return 0
