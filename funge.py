@@ -1,8 +1,10 @@
 from display import *
+from time import sleep
 import random
 
 class Funge:
-	def __init__(self, program, stack=[], func={}, debug=""):
+	def __init__(self, program, stack=[], func={}, buf="", debug=""):
+		self.buf = buf
 		self.display = Display()
 		self.ip = [0,0] #instruction pointer
 		self.vec = [1,0] #instruction vector
@@ -35,6 +37,12 @@ class Funge:
 			if (m_grid[ip[1]][ip[0]]==ord(";")):
 				comment = not comment
 		return m_grid[ip[1]][ip[0]]
+	def getch(self):
+		if not len(self.buf):
+			self.buf = input()+"\n"
+		ret = self.buf[0]
+		self.buf = self.buf[1:]
+		return ret[0]
 	def pop(self):
 		try: return self.stack.pop()
 		except: return 0
@@ -50,6 +58,7 @@ class Funge:
 				try: #PRETTY DEBUG OUTPUT
 					print("-------------------------" + str(self.string))
 					print(self.stack)
+					print('"'+self.buf+'"')
 					print("-------------------------" + str(self.ip))
 					pr = [[chr(max(32,y)) for y in x] for x in self.grid]
 					pr[self.ip[1]][self.ip[0]]="\033[1;32;40m"+pr[self.ip[1]][self.ip[0]].replace(" ", "_")+"\033[1;37;40m"
@@ -170,7 +179,7 @@ class Funge:
 					self.grid[y].append(32)
 				self.grid[y][x] = n
 		elif (op == ord("~")):
-			try:self.push(ord(input()[0]))
+			try:self.push(ord(self.getch()))
 			except:self.push(0)
 		elif (op == ord("&")):
 			try:self.push(int(input()))
@@ -206,7 +215,7 @@ class Funge:
 					for j in range(w): #whatever.
 						try:
 							grid[-1].append(self.grid[y+i][x+j])
-							if (self.grid[y+i][x+j] in [ord("p"),ord("?")]):cachable=False
+							if (self.grid[y+i][x+j] in [ord(x)for x in"p?~&"]):cachable=False
 						except:break
 				except:break
 			self.func[fstr] = (n,grid,{"cachable":cachable})
@@ -252,7 +261,7 @@ class Funge:
 					else:self.func[fstr][-1][str(args)] = exe
 					self.stack=self.stack+self.func[fstr][-1][str(args)]
 			else:
-				subfunge = Funge(self.func[fstr][1], args, self.func, self.debug)
+				subfunge = Funge(self.func[fstr][1], args, self.func, self.buf, self.debug)
 				exe = 0
 				while exe == 0:exe = subfunge.tick()
 				if exe==1: return 1
@@ -269,5 +278,5 @@ class Funge:
 			except:self.vec = [-i for i in self.vec];return 0
 			del self.func[fstr]
 		elif (op == ord("z") and "p" in self.debug): #pause - debugging mode only
-			input()
+			sleep(1)
 		return 0
